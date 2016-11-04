@@ -1,0 +1,351 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>State Machines</title>
+
+		<link rel="stylesheet" href="reveal.js/css/reveal.css">
+		<link rel="stylesheet" href="reveal.js/css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="reveal.js/lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'reveal.js/css/print/pdf.css' : 'reveal.js/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+<style>
+	.reveal pre code {
+		max-height: 600px;
+	}
+	.reveal section img{
+		background-color: white;
+	}
+</style>
+
+
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>State Machines: Friend or Foe?</h1>
+					Cody W. Eilar </br>
+					Sandia National Laboratories </br>
+					<font color='red'> Unclassified </font>
+				</section>
+
+
+				<!--
+				*
+				* Introduction
+				*
+				-->
+				<section>
+					<section>
+						<h1> Introduction <h1>
+					</section>
+
+					<section>
+						<h2> Why Do I care??? </h2>
+						<img src="https://media.giphy.com/media/3o6Zt5ThPztaTAquwU/giphy.gif"/>
+					</section>
+
+					<section>
+						<h2>Reduction of Spaghetti Code </h2>
+						<pre><code data-trim data-noescape>
+void some_function() {
+  ...
+  if ((is_running && !is_jumping) || just_started) {
+      ...
+  } else if (is_boss_level && extra_feature_enabled && !ab_test) {
+      ...
+  } else {
+      ...
+  }
+}
+						</code></pre>
+					</section>
+
+					<section>
+						<h2>Clear Definition of Program State</h2>
+						The current state of the system is summarized by one number
+					</section>
+
+					<section>
+					<h2>Maintainability</h2>
+					Much easier to add more states than picking through lots of if/else
+					statements
+					</section>
+
+					<section>
+						<h2> Testing </h2>
+						Adding new states only requires testing the new state, not the entire
+						system.
+					</section>
+
+					<section>
+						<h2> Imperative Program vs. Automata-Based Program </h2>
+						Goal: Read text file via standard input stream, and print the first word of each line.
+					</section>
+					<section>
+						<h2>Imperative Style </h2>
+						<pre><code data-trim data-noescape>
+
+int main(void) {
+  int c;
+  do {
+    do
+      c = getchar();
+    while (c == ' ');
+    while (c != EOF && !isspace(c) && c != '\n') {
+      putchar(c);
+      c = getchar();
+    }
+    putchar('\n');
+    while (c != EOF && c != '\n')
+      c = getchar();
+  } while (c != EOF);
+  return 0;
+}
+
+						</code></pre>
+					</section>
+
+					<section>
+					<h2> FSM Style</h2>
+					<pre><code data-trim>
+int main(void) {
+  enum states { before, inside, after } state;
+  int c;
+  state = before;
+  while ((c = getchar()) != EOF) {
+    switch (state) {
+    case before:
+      if (c != ' ') {
+        putchar(c);
+        if (c != '\n')
+          state = inside;
+      }
+      break;
+    case inside:
+      if (!isspace(c))
+        putchar(c);
+      else {
+        putchar('\n');
+        if (c == '\n')
+          state = before;
+        else
+          state = after;
+      }
+      break;
+    case after:
+      if (c == '\n')
+        state = before;
+    }
+  }
+  return 0;
+}
+					</code></pre>
+					</section>
+
+					<section>
+					<h2> Advantages of Imperative Style </h2>
+						Not as much code
+					</section>
+
+					<section>
+						<h2> Advantages of FSM Style </h2>
+						<ul>
+							<li>Single call to reading function</li>
+							<li>Single loop </li>
+							<li>Easier to follow flow</li>
+							<li>Each state can be validated individually </li>
+						</ul>
+					</section>
+
+					<section>
+						<h2> Wanting more...</h2>
+						We now have nice states that we can test, but there is still
+						quite a bit of noise in our solution. Furthermore, if the states
+						start to become more complicated, it will be difficult to
+						visually see in the code what our state machine is actually doing
+					</section>
+
+					<section>
+						<h2> Representation is Key </h2>
+						What if we could more compactly represent our transitions and states so
+						that it is obvious what our program is doing?
+						I'll talk more about this in the next sections, first let's
+						explore what state machines are.
+					</section>
+
+				</section>
+
+				<!--
+				*
+				* Background
+				*
+				-->
+				<section>
+				<section>
+					<h1>Background</h1>
+				</section>
+				<section>
+					<h2>What are state machines?</h2>
+					A mathematical abstraction used to design complex algorithms.
+				</section>
+
+				<section>
+					<h2>What are state machines?</h2>
+					Any device that stores the status of something at a given time and
+					can operate on input to change the state.
+				</section>
+
+				<section>
+					<h2> What are state machines?</h2>
+					<ul>
+						<li>An initial state or record of something stored somewhere</li>
+						<li>A set of possible input events</li>
+						<li>A set of new states that may result from the input </li>
+						<li>A set of possible actions or outputs that result from a new state </li>
+					</ul>
+				</section>
+
+				<section>
+					<h2> When not to use state machines </h2>
+					Mathematical algorithms like numerical integration are not a good fit for FSMs.
+				</section>
+
+				<section>
+					<h2> Turnstile example</h2>
+					<img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/Turnstile_state_machine_colored.svg" style="background-color:white;"/>
+				</section>
+
+				<section>
+					<h2>Deterministic Character Reader </h2>
+					<img src="http://blog.markshead.com/wp-content/uploads/2011/02/finite-state-machine-tape.png"/></br>
+					<img src="http://blog.markshead.com/wp-content/uploads/2011/02/simple-state-machine.png"/>
+				</section>
+
+				<section>
+					<h2> Regular Expressions </h2>
+					<img src="figures/regex.png"/>
+				</section>
+
+				<section>
+					<h2>CD Player</h2>
+					<img src="http://www.boost.org/doc/libs/1_55_0/libs/msm/doc/images/SimpleTutorial.jpg"/>
+				</section>
+
+				<section>
+					<h2> State Diagram with Accompanying Transition Table </h2>
+					<img src="figures/transition_table.png" height=300px/>
+					<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/DFAexample.svg/500px-DFAexample.svg.png" height=300px/>
+				</section>
+
+				<section>
+					<h2> Complexity </h2>
+					The previous examples are fairly straight forward and simple, but
+					what happens when things get more complicated?
+				</section>
+
+				<section>
+					<h2>Limitations of FSMs</h2>
+					State explosion - The complexity of a traditional FSM tends to grow
+					much faster than the complexity of the reactive system that it describes
+				</section>
+
+				<section>
+					<h2> Limitations of FSMs example </h2>
+					If you attempt to represent a calculator with a traditional FSM, you
+					begin to find that many events (e.g. Clear) need to be handled identically
+					by many states.
+
+				</section>
+
+				<section>
+					<h2>State Charts to the Rescue </h2>
+					State charts (introduced by David Harel) address some of the limitations of simple state machines
+					by adding a few key concepts.<br>
+					<ul>
+						<li>Hierarchical states</li>
+						<li>Orthogonal regions</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Orthogonal states </h2>
+					<img src='figures/orthogonal.png'/>
+				</section>
+
+				<section>
+					<h2> Hierarchical States <h2>
+						<img src='figures/hierarchical.png'/>
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h1>Do Good, Program State Machines</h1>
+				</section>
+				<section>
+					<h2> Before We Begin </h2>
+					Here are some good resources: <br>
+					<ul>
+						<li> <a href="https://boost-experimental.github.io/sml/index.html">Boost SML</a></li>
+						<li><a href="http://www.boost.org/doc/libs/1_62_0/libs/msm/doc/HTML/index.html"> Boost MSM </a> </li>
+					</ul>
+				</section>
+
+				<section> 
+					<h2> Ways of Implementing State Machines </h2>
+					<ul>
+						<li>Case statements</li>
+						<li>State Machine Pattern </li>
+						<li>3rd Party Libraries </li>
+					</ul>
+				</section>
+
+				<section>
+					<h2> Case Statements </h2>
+					As we saw in the first coding example in C, state machines can
+					easily be implemented using case statements, but the more complicated
+					the machine gets, the more difficult the state machine code is to follow.
+				</section>
+
+				<section>
+				<h2>State OO Pattern </h2>
+				T
+			</section>
+			</section>
+
+
+			</div>
+		</div>
+
+		<script src="reveal.js/lib/js/head.min.js"></script>
+		<script src="reveal.js/js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'reveal.js/plugin/markdown/marked.js' },
+					{ src: 'reveal.js/plugin/markdown/markdown.js' },
+					{ src: 'reveal.js/plugin/notes/notes.js', async: true },
+					{ src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
