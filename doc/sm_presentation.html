@@ -22,11 +22,8 @@
 		</script>
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script>
-    // $(function(){
-    //   $("#printer_sm_h").load("../src/printer_sm.h");
-    // });
 
+    <script>
 		$.ajax({
 			url : "../src/printer_sm.h",
 			dataType: "text",
@@ -346,10 +343,34 @@ int main(void) {
 			<section>
 				<h2>The PrinterMachine</h2>
 				<pre><code id="printer_sm_h" data-trim>
-					<div id="printer_sm_h">adsf</div>
 				</code></pre>
-
 			</section>
+
+			<section>
+				<h2> The Printer States </h2>
+			</section>
+
+			<section>
+				<h2> Separation </h2>
+				We have now separated all the specific states into a single class. But...
+			</section>
+
+			<section>
+				<h2>Readability</h2>
+				We have designed a really nice state machine, but it's hard to see
+				from a high level what we are trying to achieve unless we look at
+				each individual states behaves.
+			</section>
+
+			<section>
+				<h2>FSM Libraries</h2>
+				Boost MSM attempts to make state machines very readable and very quick.
+			</section>
+
+			<section>
+				<h2> Boost Implementation </h2>
+			</section>
+
 		</section>
 
 
