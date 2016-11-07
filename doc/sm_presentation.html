@@ -20,6 +20,24 @@
 			link.href = window.location.search.match( /print-pdf/gi ) ? 'reveal.js/css/print/pdf.css' : 'reveal.js/css/print/paper.css';
 			document.getElementsByTagName( 'head' )[0].appendChild( link );
 		</script>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+    // $(function(){
+    //   $("#printer_sm_h").load("../src/printer_sm.h");
+    // });
+
+		$.ajax({
+			url : "../src/printer_sm.h",
+			dataType: "text",
+			success : function (data) {
+				$("#printer_sm_h").text(data);
+			}
+		});
+    </script>
+
+
+<!-- Style overrides-->
 <style>
 	.reveal pre code {
 		max-height: 600px;
@@ -304,7 +322,7 @@ int main(void) {
 					</ul>
 				</section>
 
-				<section> 
+				<section>
 					<h2> Ways of Implementing State Machines </h2>
 					<ul>
 						<li>Case statements</li>
@@ -322,9 +340,17 @@ int main(void) {
 
 				<section>
 				<h2>State OO Pattern </h2>
-				T
+				<img src='figures/PrinterMachine.png'/>
 			</section>
+
+			<section>
+				<h2>The PrinterMachine</h2>
+				<pre><code id="printer_sm_h" data-trim>
+					<div id="printer_sm_h">adsf</div>
+				</code></pre>
+
 			</section>
+		</section>
 
 
 			</div>

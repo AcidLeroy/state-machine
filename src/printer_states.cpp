@@ -21,7 +21,7 @@ void BeforeState::ProcessChar(PrinterMachine &machine, int c) {
   if (c != ' ') {
     putchar(c);
     if (c != '\n') {
-      std::unique_ptr<PrinterState> next_state(new InsideState);
+      std::unique_ptr<PrinterState> next_state(new InsideState;
       SetState(machine, std::move(next_state));
     }
   }
