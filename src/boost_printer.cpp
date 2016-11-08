@@ -23,7 +23,7 @@ struct ProcessChar {
 struct printer_machine_
     : public msm::front::state_machine_def<printer_machine_> {
 
-  std::string word_;
+  std::string output_string_;
 
   // The list of FSM states
   struct BeforeState : public msm::front::state<> {
@@ -54,24 +54,33 @@ struct printer_machine_
   };
 
   // the initial state of the player SM. Must be defined
-  typedef State1 initial_state;
+  typedef BeforeState initial_state;
 
   // transition actions
 
-  struct State3ToState4 {
+  struct AppendChar {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &, FSM &, SourceState &, TargetState &) {
-      std::cout << "my_machine::State3ToState4" << std::endl;
+    void operator()(EVT const &evt, FSM &fsm, SourceState &, TargetState &) {
+      std::cout << "Appending Char" << std::endl;
+      fsm.output_string_.push_back(static_cast<char>(evt.c));
+    }
+  };
+
+  struct AppendNewLine {
+    template <class EVT, class FSM, class SourceState, class TargetState>
+    void operator()(EVT const &evt, FSM &fsm, SourceState &, TargetState &) {
+      std::cout << "Appending Char" << std::endl;
+      fsm.output_string_.push_back('\n');
     }
   };
   // guard conditions
-  struct char_not_newline {
+  struct char_not_newline_or_space {
     template <class EVT, class FSM, class SourceState, class TargetState>
     bool operator()(EVT const &evt, FSM &fsm, SourceState &src,
                     TargetState &tgt) {
-      if (evt.c != ' ')
-
-        return;
+      if (evt.c != '\n' && evt.c != ' ')
+        return true;
+      return false;
     }
   };
 
@@ -79,17 +88,19 @@ struct printer_machine_
     template <class EVT, class FSM, class SourceState, class TargetState>
     bool operator()(EVT const &evt, FSM &fsm, SourceState &src,
                     TargetState &tgt) {
-
-      return true;
+      if (evt.c != ' ')
+        return true;
+      return false;
     }
   };
 
-  struct always_false {
+  struct char_newline {
     template <class EVT, class FSM, class SourceState, class TargetState>
     bool operator()(EVT const &evt, FSM &fsm, SourceState &src,
                     TargetState &tgt) {
-      std::cout << "always_false" << std::endl;
-      return true;
+      if (evt.c == '\n')
+        return true;
+      return false;
     }
   };
 
@@ -99,14 +110,17 @@ struct printer_machine_
   // clang-format off
   struct transition_table
       : mpl::vector<
-            //    Start        Event             Next           Action Guard
+            //    Start         Event             Next           Action           Guard
             //  +--------------+----------------+--------------+----------------+----------------------+
-            Row<BeforeState, ProcessChar, AfterState, none, >,
-            Row<State2, none, State3, State2ToState3>,
-            Row<State3, none, State4, none, always_false>,
-            //  +---------+-------------+---------+---------------------+----------------------+
-            Row<State3, none, State4, State3ToState4, always_true>,
-            Row<State4, ProcessChar, State1>
+              Row<BeforeState  , ProcessChar    , BeforeState  , none           , none >,
+              Row<BeforeState  , ProcessChar    , BeforeState  , AppendChar     , char_not_space >,
+              Row<BeforeState  , ProcessChar    , InsideState  , AppendChar     , char_not_newline_or_space>,
+
+              Row<InsideState  , ProcessChar    , AfterState   , AppendNewLine  ,  none>,
+              Row<InsideState  , ProcessChar    , BeforeState  , AppendNewLine  , char_newline>,
+              Row<InsideState  , ProcessChar    , InsideState  , AppendChar     , char_not_space>,
+
+              Row<AfterState  , ProcessChar     , BeforeState  , AppendChar     , char_newline>
             //  +---------+-------------+---------+---------------------+----------------------+
             > {};
   // clang-format on
@@ -132,7 +146,11 @@ void pstate(my_machine const &p) {
 void test() {
   my_machine p;
   p.start();
-  p.process_event(ProcessChar());
+  p.process_event(ProcessChar{'h'});
+  p.process_event(ProcessChar{'e'});
+  p.process_event(ProcessChar{'l'});
+  p.process_event(ProcessChar{'l'});
+  p.process_event(ProcessChar{'o'});
 }
 }
 

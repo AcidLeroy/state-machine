@@ -2,3 +2,7 @@
 add_executable(state_pattern printer_sm.cpp printer_states.cpp state_pattern.cpp)
 add_executable(automata automata.cpp)
 add_executable(imperative imperative.cpp)
+
+find_package(Boost)
+include_directories(${Boost_INCLUDE_DIRS})
+add_executable(boost_printer boost_printer.cpp)
