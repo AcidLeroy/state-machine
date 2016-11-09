@@ -6,3 +6,6 @@ add_executable(imperative imperative.cpp)
 find_package(Boost)
 include_directories(${Boost_INCLUDE_DIRS})
 add_executable(boost_printer boost_printer.cpp)
+
+include_directories("sml/include")
+add_executable(sml_printer sml_printer.cpp)
