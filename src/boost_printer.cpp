@@ -18,6 +18,7 @@ namespace {
 struct ProcessChar {
   int c;
 };
+struct DisplayString {};
 
 // front-end: define the FSM structure
 struct printer_machine_
@@ -53,10 +54,25 @@ struct printer_machine_
     }
   };
 
+  struct StatusState : public msm::front::state<> {
+    template <class Event, class FSM> void on_entry(Event const &, FSM &) {
+      std::cout << "entering: StatusState" << std::endl;
+    }
+    template <class Event, class FSM> void on_exit(Event const &, FSM &) {
+      std::cout << "leaving: StatusState" << std::endl;
+    }
+  };
+
   // the initial state of the player SM. Must be defined
-  typedef BeforeState initial_state;
+  typedef mpl::vector<BeforeState, StatusState> initial_state;
 
   // transition actions
+  struct PrintString {
+    template <class EVT, class FSM, class SourceState, class TargetState>
+    void operator()(EVT const &evt, FSM &fsm, SourceState &, TargetState &) {
+      std::cout << "The string current is: " << fsm.output_string_ << std::endl;
+    }
+  };
 
   struct AppendChar {
     template <class EVT, class FSM, class SourceState, class TargetState>
@@ -111,17 +127,19 @@ struct printer_machine_
   struct transition_table
       : mpl::vector<
             //    Start         Event             Next           Action           Guard
-            //  +--------------+----------------+--------------+----------------+----------------------+
-              Row<BeforeState  , ProcessChar    , BeforeState  , none           , none >,
-              Row<BeforeState  , ProcessChar    , BeforeState  , AppendChar     , char_not_space >,
-              Row<BeforeState  , ProcessChar    , InsideState  , AppendChar     , char_not_newline_or_space>,
+            //  +--------------+----------------+--------------+----------------+--------------------------------+
+              Row<BeforeState  , ProcessChar    , BeforeState  , none           , none                        >,
+              Row<BeforeState  , ProcessChar    , BeforeState  , AppendChar     , char_not_space              >,
+              Row<BeforeState  , ProcessChar    , InsideState  , AppendChar     , char_not_newline_or_space   >,
 
-              Row<InsideState  , ProcessChar    , AfterState   , AppendNewLine  ,  none>,
-              Row<InsideState  , ProcessChar    , BeforeState  , AppendNewLine  , char_newline>,
-              Row<InsideState  , ProcessChar    , InsideState  , AppendChar     , char_not_space>,
+              Row<InsideState  , ProcessChar    , AfterState   , AppendNewLine  ,  none                       >,
+              Row<InsideState  , ProcessChar    , BeforeState  , AppendNewLine  , char_newline                >,
+              Row<InsideState  , ProcessChar    , InsideState  , AppendChar     , char_not_space              >,
 
-              Row<AfterState  , ProcessChar     , BeforeState  , AppendChar     , char_newline>
-            //  +---------+-------------+---------+---------------------+----------------------+
+              Row<AfterState   , ProcessChar    , BeforeState  , AppendChar     , char_newline                >,
+
+              Row<StatusState  , DisplayString  , StatusState  , PrintString    , none                        >
+            //  +--------------+----------------+--------------+----------------+--------------------------------+
             > {};
   // clang-format on
   // Replaces the default no-transition response.
@@ -137,10 +155,13 @@ typedef msm::back::state_machine<printer_machine_> my_machine;
 //
 // Testing utilities.
 //
-static char const *const state_names[] = {"State1", "State2", "State3",
-                                          "State4"};
+static char const *const state_names[] = {"BeforeState", "InsideState",
+                                          "AfterState", "StatusState"};
 void pstate(my_machine const &p) {
-  std::cout << " -> " << state_names[p.current_state()[0]] << std::endl;
+  // we have now several active states, which we show
+  for (unsigned int i = 0; i < my_machine::nr_regions::value; ++i) {
+    std::cout << " -> " << state_names[p.current_state()[i]] << std::endl;
+  }
 }
 
 void test() {
@@ -151,6 +172,7 @@ void test() {
   p.process_event(ProcessChar{'l'});
   p.process_event(ProcessChar{'l'});
   p.process_event(ProcessChar{'o'});
+  p.process_event(DisplayString{});
 }
 }
 
