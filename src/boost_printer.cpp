@@ -69,7 +69,7 @@ struct printer_machine_
   // transition actions
   struct PrintString {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &evt, FSM &fsm, SourceState &, TargetState &) {
+    void operator()(EVT const &, FSM &fsm, SourceState &, TargetState &) {
       std::cout << "The string current is: " << fsm.output_string_ << std::endl;
     }
   };
@@ -84,7 +84,7 @@ struct printer_machine_
 
   struct AppendNewLine {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &evt, FSM &fsm, SourceState &, TargetState &) {
+    void operator()(EVT const &, FSM &fsm, SourceState &, TargetState &) {
       std::cout << "Appending Char" << std::endl;
       fsm.output_string_.push_back('\n');
     }
@@ -92,8 +92,7 @@ struct printer_machine_
   // guard conditions
   struct char_not_newline_or_space {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    bool operator()(EVT const &evt, FSM &fsm, SourceState &src,
-                    TargetState &tgt) {
+    bool operator()(EVT const &evt, FSM &, SourceState &, TargetState &) {
       if (evt.c != '\n' && evt.c != ' ')
         return true;
       return false;
@@ -102,8 +101,7 @@ struct printer_machine_
 
   struct char_not_space {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    bool operator()(EVT const &evt, FSM &fsm, SourceState &src,
-                    TargetState &tgt) {
+    bool operator()(EVT const &evt, FSM &, SourceState &, TargetState &) {
       if (evt.c != ' ')
         return true;
       return false;
@@ -112,8 +110,7 @@ struct printer_machine_
 
   struct char_newline {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    bool operator()(EVT const &evt, FSM &fsm, SourceState &src,
-                    TargetState &tgt) {
+    bool operator()(EVT const &evt, FSM &, SourceState &, TargetState &) {
       if (evt.c == '\n')
         return true;
       return false;
@@ -155,14 +152,14 @@ typedef msm::back::state_machine<printer_machine_> my_machine;
 //
 // Testing utilities.
 //
-static char const *const state_names[] = {"BeforeState", "InsideState",
-                                          "AfterState", "StatusState"};
-void pstate(my_machine const &p) {
-  // we have now several active states, which we show
-  for (unsigned int i = 0; i < my_machine::nr_regions::value; ++i) {
-    std::cout << " -> " << state_names[p.current_state()[i]] << std::endl;
-  }
-}
+// static char const *const state_names[] = {"BeforeState", "InsideState",
+//                                           "AfterState", "StatusState"};
+// void pstate(my_machine const &p) {
+//   // we have now several active states, which we show
+//   for (unsigned int i = 0; i < my_machine::nr_regions::value; ++i) {
+//     std::cout << " -> " << state_names[p.current_state()[i]] << std::endl;
+//   }
+// }
 
 void test() {
   my_machine p;

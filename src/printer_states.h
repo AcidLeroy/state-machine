@@ -8,7 +8,7 @@ class PrinterMachine;
 
 class PrinterState {
 public:
-  virtual void ProcessChar(PrinterMachine &machine, int c){};
+  virtual void ProcessChar(PrinterMachine &, int){};
   virtual ~PrinterState(){};
 
 protected:
